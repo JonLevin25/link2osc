@@ -9,8 +9,12 @@ set(Carabiner_VERSION "1.1.6")
 configure_file(carabiner.h.in carabiner.h)
 configure_file(Info.plist.in Info.plist)
 
+set(LIBLO_TARGET lo_shared)
+# set(LIBLO_TARGET lo_static)
+
 include(link/AbletonLinkConfig.cmake)
 add_subdirectory(gflags)
+add_subdirectory(liblo/cmake)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
@@ -35,6 +39,7 @@ if (APPLE)
 endif()
 
 target_link_libraries(Carabiner Ableton::Link gflags)
+target_link_libraries(Carabiner ${LIBLO_TARGET})
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
   target_link_libraries(Carabiner pthread)
