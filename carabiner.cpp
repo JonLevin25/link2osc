@@ -7,9 +7,21 @@
 #include <gflags/gflags.h>
 
 #include <ableton/Link.hpp>
+#include "osc/osc_handler.h"
 
 extern "C" {
 #include "mongoose.h"
+}
+
+#define SEND_OSC 1
+
+void send(struct mg_connection *nc, std::string response)
+{
+  if (SEND_OSC) {
+    osc_send(response);
+  } else {
+    mg_send(nc, response.data(), response.length());
+  }
 }
 
 // The version number, for the command line, as well as the client query.
@@ -59,7 +71,7 @@ static void reportStatus(struct mg_connection *nc) {
     " :bpm " + std::to_string(sessionState.tempo()) +
     " :start " + std::to_string(sessionState.timeAtBeat(0.0, 4.0).count()) +
     " :beat " + std::to_string(sessionState.beatAtTime(time, 4.0)) + playingResponse + " }\n";
-  mg_send(nc, response.data(), response.length());
+  send(nc, response);
 }
 
 // Process a request for the current link session status. Can simply remove the connection
@@ -73,7 +85,7 @@ static void handleStatus(std::stringstream &args, struct mg_connection *nc) {
 
 static void handleVersion(std::stringstream &args, struct mg_connection *nc) {
   std::string response = "version \"" + version + "\"\n";
-  mg_send(nc, response.data(), response.length());
+  send(nc, response);
 }
 
 // Report that an argument has not been usable, and skip to the next command within the
@@ -82,7 +94,7 @@ static void handleVersion(std::stringstream &args, struct mg_connection *nc) {
 static void reportBadArgument(std::string code, std::string message, std::stringstream &args,
                               struct mg_connection *nc) {
   std::string response = code + '\n';
-  mg_send(nc, response.data(), response.length());
+  send(nc, response);
 
   if (args.fail()) {
     args.clear(args.rdstate() & ~std::ios::failbit);
@@ -142,7 +154,7 @@ static void handleBeatAtTime(std::stringstream &args, struct mg_connection *nc) 
       std::string response = "beat-at-time { :when " + std::to_string(when) +
         " :quantum " + std::to_string(quantum) +
         " :beat " + std::to_string(beat) + " }\n";
-      mg_send(nc, response.data(), response.length());
+      send(nc, response);
     }
   }
 }
@@ -168,7 +180,7 @@ static void handlePhaseAtTime(std::stringstream &args, struct mg_connection *nc)
       std::string response = "phase-at-time { :when " + std::to_string(when) +
         " :quantum " + std::to_string(quantum) +
         " :phase " + std::to_string(phase) + " }\n";
-      mg_send(nc, response.data(), response.length());
+      send(nc, response);
     }
   }
 }
@@ -195,7 +207,7 @@ static void handleTimeAtBeat(std::stringstream &args, struct mg_connection *nc) 
       std::string response = "time-at-beat { :beat " + std::to_string(beat) +
         " :quantum " + std::to_string(quantum) +
         " :when " + std::to_string(micros.count()) + " }\n";
-      mg_send(nc, response.data(), response.length());
+      send(nc, response);
     }
   }
 }
@@ -292,7 +304,7 @@ static void processMessage(std::string msg, struct mg_connection *nc) {
     } else {
       // Unrecognized input, report error
       std::string response = "unsupported " + cmd + '\n';
-      mg_send(nc, response.data(), response.length());
+      send(nc, response);
       std::cerr << std::endl << "Unrecognized command: " << cmd << std::endl;
       args.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
     }

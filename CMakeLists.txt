@@ -19,6 +19,12 @@ include(link/AbletonLinkConfig.cmake)
 add_subdirectory(gflags)
 add_subdirectory(liblo/cmake)
 
+file(GLOB OSC_SRC
+     "osc/*.h"
+     "osc/*.cpp"
+)
+add_library(osc_handler ${OSC_SRC})
+
 
 set(mongoose_HEADERS
   mongoose.h
@@ -41,7 +47,8 @@ if (APPLE)
 endif()
 
 target_link_libraries(Carabiner Ableton::Link gflags)
-target_link_libraries(Carabiner ${LIBLO_TARGET})
+target_link_libraries(osc_handler ${LIBLO_TARGET})
+target_link_libraries(Carabiner osc_handler)
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
   target_link_libraries(Carabiner pthread)
