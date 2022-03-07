@@ -47,8 +47,7 @@ if (APPLE)
 endif()
 
 target_link_libraries(Carabiner Ableton::Link gflags)
-target_link_libraries(osc_handler ${LIBLO_TARGET})
-target_link_libraries(osc_handler gflags)
+target_link_libraries(osc_handler ${LIBLO_TARGET} Ableton::Link gflags)
 target_link_libraries(Carabiner osc_handler)
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
