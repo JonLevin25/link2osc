@@ -2,6 +2,7 @@
 #include "lo/lo.h"
 #include "lo/lo_cpp.h"
 
+#include <string>
 #include <gflags/gflags.h>
 
 // NULL is same as localhost for liblo
@@ -22,6 +23,12 @@ void init_lo_addr()
 
   addr = lo_address_new(FLAGS_osc_host.c_str(), FLAGS_osc_port.c_str());
 }
+
+void osc_reportStatus(std::string playingState, int16_t numPeers, double tempo, long long timeAtBeat, double beatAtTime)
+{
+  lo_send(addr, OSC_PATH, "sidhd", playingState, numPeers, tempo, timeAtBeat, beatAtTime);
+}
+
 
 // TODO: get host/port from cmdline args
 void osc_send(std::string response)

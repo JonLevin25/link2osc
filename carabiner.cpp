@@ -17,8 +17,9 @@ extern "C" {
 
 void send(struct mg_connection *nc, std::string response)
 {
+  printf("SEND");
   if (SEND_OSC) {
-    osc_send(response);
+    // osc_send(response);
   } else {
     mg_send(nc, response.data(), response.length());
   }
@@ -72,6 +73,7 @@ static void reportStatus(struct mg_connection *nc) {
     " :start " + std::to_string(sessionState.timeAtBeat(0.0, 4.0).count()) +
     " :beat " + std::to_string(sessionState.beatAtTime(time, 4.0)) + playingResponse + " }\n";
   send(nc, response);
+  osc_reportStatus(playingState, linkInstance.numPeers(), sessionState.tempo(), sessionState.timeAtBeat(0.0, 4.0).count(), sessionState.beatAtTime(time, 4.0));
 }
 
 // Process a request for the current link session status. Can simply remove the connection
